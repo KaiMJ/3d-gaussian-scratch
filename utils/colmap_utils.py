@@ -42,6 +42,46 @@ def read_cameras_binary(file_path):
     return cameras
 
 
+def read_points3D_binary(file_path):
+    points3D = {}
+    with open(file_path, "rb") as f:
+        num_points = struct.unpack("Q", f.read(8))[0]
+        for _ in range(num_points):
+            point_id = struct.unpack("Q", f.read(8))[0]
+            xyz = struct.unpack("ddd", f.read(24))  # X, Y, Z
+            rgb = struct.unpack("BBB", f.read(3))   # R, G, B
+            error = struct.unpack("d", f.read(8))[0]
+            track_length = struct.unpack("Q", f.read(8))[0]
+            track = []
+            for _ in range(track_length):
+                image_id, feature_id = struct.unpack("ii", f.read(8))
+                track.append((image_id, feature_id))
+            points3D[point_id] = {
+                "xyz": np.array(xyz),
+                "rgb": np.array(rgb),
+                "error": error,
+                "track": track
+            }
+    return points3D
+
+
+def visualize_point_cloud(points, colors, title="3D Point Cloud"):
+    # Matplotlib visualization
+    fig = plt.figure(figsize=(10, 7))
+    ax = fig.add_subplot(111, projection="3d")
+    ax.scatter(points[:, 0], points[:, 1], points[:, 2], c=colors, s=1)
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_zlabel("Z")
+    plt.show()
+
+    # Open3D visualization
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(points)
+    pcd.colors = o3d.utility.Vector3dVector(colors)
+    o3d.visualization.draw_geometries([pcd], window_name=title)
+
+
 def read_images_binary(file_path):
     """Read COLMAP images.bin file to get camera extrinsics"""
     images = {}
@@ -127,43 +167,3 @@ def create_transforms_json(cameras_data, images_data):
     }
 
     return transforms_dict
-
-
-def read_points3D_binary(file_path):
-    points3D = {}
-    with open(file_path, "rb") as f:
-        num_points = struct.unpack("Q", f.read(8))[0]
-        for _ in range(num_points):
-            point_id = struct.unpack("Q", f.read(8))[0]
-            xyz = struct.unpack("ddd", f.read(24))  # X, Y, Z
-            rgb = struct.unpack("BBB", f.read(3))   # R, G, B
-            error = struct.unpack("d", f.read(8))[0]
-            track_length = struct.unpack("Q", f.read(8))[0]
-            track = []
-            for _ in range(track_length):
-                image_id, feature_id = struct.unpack("ii", f.read(8))
-                track.append((image_id, feature_id))
-            points3D[point_id] = {
-                "xyz": np.array(xyz),
-                "rgb": np.array(rgb),
-                "error": error,
-                "track": track
-            }
-    return points3D
-
-
-def visualize_point_cloud(points, colors, title="3D Point Cloud"):
-    # Matplotlib visualization
-    fig = plt.figure(figsize=(10, 7))
-    ax = fig.add_subplot(111, projection="3d")
-    ax.scatter(points[:, 0], points[:, 1], points[:, 2], c=colors, s=1)
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
-    ax.set_zlabel("Z")
-    plt.show()
-
-    # Open3D visualization
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(points)
-    pcd.colors = o3d.utility.Vector3dVector(colors)
-    o3d.visualization.draw_geometries([pcd], window_name=title)

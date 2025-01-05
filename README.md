@@ -4,6 +4,7 @@ References
 - https://huggingface.co/datasets/DL3DV/DL3DV-Benchmark
 - https://github.com/google-research/multinerf/blob/main/scripts/local_colmap_and_resize.sh
 - https://colmap.github.io/cli.html#cli
+- https://arxiv.org/abs/2111.12077
 
 
 ## 1. Download Dataset (DL3DV-Benchmark)
@@ -57,6 +58,7 @@ colmap exhaustive_matcher \
     --SiftMatching.use_gpu "$USE_GPU"
 
 ### Bundle adjustment
+### takes the longest time
 mkdir -p "$DATASET_PATH"/sparse
 colmap mapper \
     --database_path "$DATASET_PATH"/database.db \
@@ -78,21 +80,25 @@ colmap image_undistorter \
     --output_type COLMAP \
     --max_image_size 2000
 
+### takes a while
 colmap patch_match_stereo \
     --workspace_path $DATASET_PATH/dense \
     --workspace_format COLMAP \
     --PatchMatchStereo.geom_consistency true
 
+### haven't tested
 colmap stereo_fusion \
     --workspace_path $DATASET_PATH/dense \
     --workspace_format COLMAP \
     --input_type geometric \
     --output_path $DATASET_PATH/dense/fused.ply
 
+### haven't tested
 colmap poisson_mesher \
     --input_path $DATASET_PATH/dense/fused.ply \
     --output_path $DATASET_PATH/dense/meshed-poisson.ply
 
+### haven't tested
 colmap delaunay_mesher \
     --input_path $DATASET_PATH/dense \
     --output_path $DATASET_PATH/dense/meshed-delaunay.ply
@@ -133,4 +139,108 @@ Contains the reconstructed 3D point cloud data:
 | Track Length | Number of images observing this point |
 | Track Info | List of image IDs and feature IDs that observed this point |
 
+</details>
+
+<details>
+<summary>Visualize COLMAP output</summary>
+
+### Point Cloud Visualization Script
+
+```python
+import numpy as np
+from utils.colmap_utils import read_points3D_binary, visualize_point_cloud
+
+points3D_file = "data/sparse/0/points3D.bin"
+points3D_data = read_points3D_binary(points3D_file)
+
+points = np.array([v["xyz"] for v in points3D_data.values()])
+colors = np.array([v["rgb"] / 255.0 for v in points3D_data.values()])
+
+print(f"Loaded {len(points)} points")
+
+visualize_point_cloud(points, colors)
+```
+
+### Open3D Viewer controls
+
+#### Mouse view control
+ - Left button + drag         : Rotate.
+ - Ctrl + left button + drag  : Translate.
+ - Wheel button + drag        : Translate.
+ - Shift + left button + drag : Roll.
+ - Wheel                      : Zoom in/out.
+
+#### Keyboard view control
+ - [/]          : Increase/decrease field of view.
+ - R            : Reset view point.
+ - Ctrl/Cmd + C : Copy current view status into the clipboard.
+ - Ctrl/Cmd + V : Paste view status from clipboard.
+
+#### General control
+ - Q, Esc       : Exit window.
+ - H            : Print help message.
+ - P, PrtScn    : Take a screen capture.
+ - D            : Take a depth capture.
+ - O            : Take a capture of current rendering settings.
+</details>
+
+####
+Example COLMAP Frame_00001.
+
+<div style="display: flex; justify-content: space-between;">
+    <img src="docs/images/colmap_frame_00001.png" alt="COLMAP Frame" width="48%"/>
+    <img src="docs/images/frame_00001.png" alt="Original Frame" width="48%"/>
+</div>
+
+
+## 3. Gaussian Splatting Pseudocode
+
+<details>
+<summary>Gaussian Splatting Pseudocode</summary>
+
+```
+3D Gaussian Splatting (volumetric, rasterization)
+1. initialize 3D gaussians
+    - differentiable volumetric representation
+2. optimize anisotropic covariance
+3. visibility-aware rendering algorithm
+
+Allows high quality and real-time rendering
+
+VS Nerfs (ray tracing)
+ - high quality but slow training
+ - fast training with hash encoding / , but slow rendering
+ - importance sampling and positional encoding, but still slow
+ - struggle with empty space since neural networks are "continuos"
+Inputs:
+ - Only use SFM (Colmap)
+ - MVS data (dense reconstruction, color, depth, normals, confidence)
+    - re-project and blend input images, but fail to recover "unreconstructred or over-reconstructed" regions
+    - so new methods leverage GPU that reduce artifacts
+ - Initialize 150k gaussians with SFM points. For nerf-synthetic, even randomized points do well
+
+Gaussian points --> project to 2D, then apply alpha blending
+  - Like NeRF, trace depth
+   - initially tried with points, but there were holes so moved to "splatts" or circular / elliptic discs
+    - also, initial methods still depended on MVS
+
+Optimization:
+ - 3D position
+ - opacity alpha
+ - anisotropic covariance
+ - spherical harmonic coefficients
+
+- blended with adaptive density control
+ - add more gaussians
+ - remove gaussians
+
+Real-time rendering:
+ - tile-based rasterization GPU sorting
+ - alpha blending (visibility-aware). Allows fast forward and backward pass
+
+Alpha blending (like NeRF)
+ - samples point along a ray
+ - compute density (color) at each point
+    - C = T*alpha*(cumulative)
+```
 </details>
