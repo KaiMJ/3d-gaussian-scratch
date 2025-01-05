@@ -297,3 +297,14 @@ function Rasterize(𝑤, ℎ, 𝑀, 𝑆, 𝐶, 𝐴, 𝑉 )
     return 𝐼
 ```
 </details>
+
+## 4. Implementation
+
+1. Initialize 3D gaussian points with covariance matrices
+ -  Σ = 𝑅𝑆𝑆^𝑇𝑅^𝑇: factorized with rotation R and scaling S
+ -  isotropic Gaussian with axes equal to mean of distance to closest three points
+
+
+<div style="display: flex; justify-content: space-between;">
+    <img src="docs/images/gaussian_points_00001.png" alt="COLMAP Frame" width="48%"/>
+</div>
