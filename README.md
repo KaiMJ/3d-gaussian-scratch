@@ -196,7 +196,7 @@ Example COLMAP Frame_00001.
 ## 3. Gaussian Splatting Pseudocode
 
 <details>
-<summary>Gaussian Splatting Pseudocode</summary>
+<summary>Gaussian Splatting Notes</summary>
 
 ```
 3D Gaussian Splatting (volumetric, rasterization)
@@ -242,5 +242,56 @@ Alpha blending (like NeRF)
  - samples point along a ray
  - compute density (color) at each point
     - C = T*alpha*(cumulative)
+```
+</details>
+
+
+<details>
+<summary>Gaussian Splatting Pseudocode (from paper)</summary>
+
+```
+Algorithm 1 Optimization and Densification
+𝑤, ℎ: width and height of the training images
+
+𝑀 ← SfM Points ⊲ Positions
+𝑆,𝐶, 𝐴 ← InitAttributes() ⊲ Covariances, Colors, Opacities
+𝑖 ← 0 ⊲ Iteration Count
+
+while not converged do
+    𝑉 , ˆ𝐼 ← SampleTrainingView() ⊲ Camera 𝑉 and Image
+    𝐼 ← Rasterize(𝑀, 𝑆, 𝐶, 𝐴, 𝑉 ) ⊲ Alg. 2
+    𝐿 ← 𝐿𝑜𝑠𝑠(𝐼, ˆ𝐼) ⊲ Loss
+    𝑀, 𝑆, 𝐶, 𝐴 ← Adam(∇𝐿) ⊲ Backprop & Step
+    if IsRefinementIteration(𝑖) then
+        for all Gaussians (𝜇, Σ, 𝑐, 𝛼) in (𝑀, 𝑆,𝐶, 𝐴) do
+            if 𝛼 < 𝜖 or IsTooLarge(𝜇, Σ) then ⊲ Pruning
+                RemoveGaussian()
+        if ∇𝑝𝐿 > 𝜏𝑝 then ⊲ Densification
+                if ∥𝑆 ∥ > 𝜏𝑆 then ⊲ Over-reconstruction
+                    SplitGaussian(𝜇, Σ, 𝑐, 𝛼)
+                else ⊲ Under-reconstruction
+                    CloneGaussian(𝜇, Σ, 𝑐, 𝛼)
+    𝑖 ← 𝑖 + 1
+
+
+Algorithm 2 GPU software rasterization of 3D Gaussians
+𝑤, ℎ: width and height of the image to rasterize
+𝑀, 𝑆: Gaussian means and covariances in world space
+𝐶, 𝐴: Gaussian colors and opacities
+𝑉 : view configuration of current camera
+
+function Rasterize(𝑤, ℎ, 𝑀, 𝑆, 𝐶, 𝐴, 𝑉 )
+    CullGaussian(𝑝, 𝑉 ) ⊲ Frustum Culling
+    𝑀′, 𝑆′ ← ScreenspaceGaussians(𝑀, 𝑆, 𝑉 ) ⊲ Transform
+    𝑇 ← CreateTiles(𝑤, ℎ)
+    𝐿, 𝐾 ← DuplicateWithKeys(𝑀′, 𝑇 ) ⊲ Indices and Keys
+        SortByKeys(𝐾, 𝐿) ⊲ Globally Sort
+    𝑅 ← IdentifyTileRanges(𝑇 , 𝐾)
+    𝐼 ← 0 ⊲ Init Canvas
+    for all Tiles 𝑡 in 𝐼 do
+        for all Pixels 𝑖 in 𝑡 do
+            𝑟 ← GetTileRange(𝑅, 𝑡)
+            𝐼 [𝑖] ← BlendInOrder(𝑖, 𝐿, 𝑟, 𝐾, 𝑀′, 𝑆′, 𝐶, 𝐴)
+    return 𝐼
 ```
 </details>
