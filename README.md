@@ -4,7 +4,7 @@ References
 - https://huggingface.co/datasets/DL3DV/DL3DV-Benchmark
 - https://github.com/google-research/multinerf/blob/main/scripts/local_colmap_and_resize.sh
 - https://colmap.github.io/cli.html#cli
-- https://arxiv.org/abs/2111.12077
+- https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/
 
 
 ## 1. Download Dataset (DL3DV-Benchmark)
@@ -185,7 +185,9 @@ visualize_point_cloud(points, colors)
 </details>
 
 ####
-Example COLMAP Frame_00001.
+Example COLMAP from dataset's frame_00001.
+
+$dataset_hash=9641a1ed7963ce5ca734cff3e6ccea3dfa8bcb0b0a3ff78f65d32a080de2d71e.
 
 <div style="display: flex; justify-content: space-between;">
     <img src="docs/images/colmap_frame_00001.png" alt="COLMAP Frame" width="48%"/>
