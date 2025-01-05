@@ -306,5 +306,5 @@ function Rasterize(𝑤, ℎ, 𝑀, 𝑆, 𝐶, 𝐴, 𝑉 )
 
 
 <div style="display: flex; justify-content: space-between;">
-    <img src="docs/images/gaussian_points_00001.png" alt="COLMAP Frame" width="48%"/>
+    <img src="docs/images/gaussian_points_00001.png" alt="Gaussian Points (scaled down 4x)" width="48%"/>
 </div>
