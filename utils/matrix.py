@@ -36,10 +36,10 @@ def project_points(points, e, K, dist_coeffs=None):
     # homogenous coordinates
     points_h = np.hstack([points, np.ones((len(points), 1))])
     # First apply extrinsics (4x4 @ 4xN)
-    transformed_points = (e @ points_h.T)
+    cam_points = (e @ points_h.T)
     # Then get normalized coordinates (before K)
-    transformed_points = transformed_points[:3, :]
-    normalized_coords = transformed_points / transformed_points[2:3, :]  # Divide by Z
+    cam_points = cam_points[:3, :]
+    normalized_coords = cam_points / cam_points[2:3, :]  # Divide by Z
     x, y = normalized_coords[0], normalized_coords[1]
 
     if dist_coeffs is not None:
@@ -65,6 +65,34 @@ def project_points(points, e, K, dist_coeffs=None):
 
     return projected_points
 
+def project_covariance(points, sigmas, e, K, dist_coeffs=None):
+    W = e[:3, :3]
+    t = e[:3, 3]
+    fx, fy = K[0, 0], K[1, 1]
+
+    points_h = np.hstack([points, np.ones((len(points), 1))])
+    cam_points = (e @ points_h.T).T[:, :3]
+
+    X = cam_points[:, 0]
+    Y = cam_points[:, 1]
+    Z = cam_points[:, 2]
+
+    # Get normalized coordinates
+    x = X / Z
+    y = Y / Z
+
+    # Jacobian after distortion
+    J = np.zeros((len(points), 2, 3))
+    J[:, 0, 0] = fx / Z
+    J[:, 0, 2] = -fx * X / Z**2
+    J[:, 1, 1] = fy / Z
+    J[:, 1, 2] = -fy * Y / Z**2
+
+    U = J@W
+    sigma_2d = np.einsum('nij, njk, nkl->nil', U, sigmas, U.transpose(0, 2, 1))
+
+    return sigma_2d
+
 def select_points_within_bounds(projected_points, width, height, colors=None):
     bound_indices = np.all(projected_points >= 0, axis=1) & np.all(projected_points < [width, height], axis=1)
     bound_points = projected_points[bound_indices]
@@ -72,3 +100,4 @@ def select_points_within_bounds(projected_points, width, height, colors=None):
         bound_colors = colors[bound_indices]
         return bound_points, bound_colors
     return bound_points, None
+

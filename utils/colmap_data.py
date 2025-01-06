@@ -67,3 +67,4 @@ class COLMAP_Data:
         points = np.array([v["xyz"] for v in self.points3D_data.values()])
         colors = np.array([v["rgb"] / 255.0 for v in self.points3D_data.values()])
         return points, colors
+
