@@ -185,13 +185,23 @@ visualize_point_cloud(points, colors)
 </details>
 
 ####
-Example COLMAP from dataset's frame_00001.
+Example COLMAP from dataset's frame_00001. COLMAP outputs 56042 points.
 
 $dataset_hash=9641a1ed7963ce5ca734cff3e6ccea3dfa8bcb0b0a3ff78f65d32a080de2d71e.
 
 <div style="display: flex; justify-content: space-between;">
-    <img src="docs/images/colmap_frame_00001.png" alt="COLMAP Frame" width="48%"/>
-    <img src="docs/images/frame_00001.png" alt="Original Frame" width="48%"/>
+    <div style="text-align: center; width: 30%">
+        <img src="docs/images/colmap_frame_00001.png" alt="COLMAP Frame" width="100%"/>
+        <p>COLMAP Point Cloud from Open3D (manually adjusted) </p>
+    </div>
+    <div style="text-align: center; width: 30%">
+        <img src="docs/images/projected_frame_00001.png" alt="COLMAP Frame Projected" width="100%"/>
+        <p>COLMAP Projected Points using Intrinsics and Extrinsics</p>
+    </div>
+    <div style="text-align: center; width: 30%">
+        <img src="docs/images/frame_00001.png" alt="Original Frame" width="100%"/>
+        <p>Original Frame</p>
+    </div>
 </div>
 
 
