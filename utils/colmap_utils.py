@@ -63,28 +63,39 @@ def read_points3D_binary(file_path):
     return points3D
 
 
-def read_images_binary(file_path):
-    """Read COLMAP images.bin file to get camera extrinsics"""
+def read_images_binary(images_file):
     images = {}
-    with open(file_path, "rb") as f:
-        num_images = struct.unpack("Q", f.read(8))[0]
+    
+    with open(images_file, "rb") as fid:
+        num_images = struct.unpack("Q", fid.read(8))[0]
+        
         for _ in range(num_images):
-            image_id = struct.unpack("i", f.read(4))[0]
-            qvec = struct.unpack("dddd", f.read(32))  # Quaternion
-            tvec = struct.unpack("ddd", f.read(24))   # Translation
-            camera_id = struct.unpack("i", f.read(4))[0]
+            image_id = struct.unpack("i", fid.read(4))[0]
+            qw, qx, qy, qz = struct.unpack("dddd", fid.read(32))
+            tx, ty, tz = struct.unpack("ddd", fid.read(24))
+            camera_id = struct.unpack("i", fid.read(4))[0]
+            
             name = ""
-            char = struct.unpack("c", f.read(1))[0]
-            while char != b"\x00":
-                name += char.decode("utf-8")
-                char = struct.unpack("c", f.read(1))[0]
+            name_char = struct.unpack("c", fid.read(1))[0]
+            while name_char != b"\x00":
+                name += name_char.decode("utf-8")
+                name_char = struct.unpack("c", fid.read(1))[0]
+            
+            num_points2D = struct.unpack("Q", fid.read(8))[0]
+            points2D = []
+            for _ in range(num_points2D):
+                x, y = struct.unpack("dd", fid.read(16))
+                point3D_id = struct.unpack("q", fid.read(8))[0]
+                points2D.append([x, y, point3D_id])
 
             images[image_id] = {
-                "qvec": np.array(qvec),
-                "tvec": np.array(tvec),
+                "qvec": [qw, qx, qy, qz],
+                "tvec": [tx, ty, tz],
                 "camera_id": camera_id,
-                "name": name
+                "name": name,
+                "points2D": points2D
             }
+            
     return images
 
 

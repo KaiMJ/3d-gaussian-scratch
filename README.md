@@ -302,6 +302,7 @@ function Rasterize(𝑤, ℎ, 𝑀, 𝑆, 𝐶, 𝐴, 𝑉 )
 
 1. Initialize 3D gaussian points with covariance matrices
  -  Σ = 𝑅𝑆𝑆^𝑇𝑅^𝑇: factorized with rotation R and scaling S
+ - rotation R is further factorized with normalized quaternion
  -  isotropic Gaussian with axes equal to mean of distance to closest three points
 
 
