@@ -40,7 +40,7 @@ def create_ellipsoids_as_one_mesh(points, sigmas, colors, sphere_resolution=5):
     vertex_count = 0
     
     for center, sigma, color in zip(points, sigmas, colors):
-        scales = np.diagonal(sigma)
+        scales = np.sqrt(np.diagonal(sigma))
         transformed_vertices = base_vertices * scales + center
 
         all_vertices.append(transformed_vertices)

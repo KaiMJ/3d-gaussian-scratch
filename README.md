@@ -302,9 +302,10 @@ function Rasterize(𝑤, ℎ, 𝑀, 𝑆, 𝐶, 𝐴, 𝑉 )
 1. Initialize 3D gaussian points with covariance matrices
  -  Σ = 𝑅𝑆𝑆^𝑇𝑅^𝑇: factorized with rotation R and scaling S
  - rotation R is further factorized with normalized quaternion
- -  isotropic Gaussian with axes equal to mean of distance to closest three points
+ -  S = mean of distance to closest three points
 
+*Scaled down for visualization*
 
-<div style="display: flex; justify-content: space-between;">
-    <img src="docs/images/gaussian_points_00001.png" alt="Gaussian Points (scaled down 4x)" width="48%"/>
-</div>
+| Gaussian Points Open3D (manual) | Projected Gaussian Points (alpha=0.1) | Original Frame |
+|:------------:|:---------------------:|:--------------:|
+| <img src="docs/images/gaussian_points_00001.png" width="300"/> | <img src="docs/images/projected_gaussian_00001.png" width="300"/> | <img src="docs/images/frame_00001.png" width="300"/> |
