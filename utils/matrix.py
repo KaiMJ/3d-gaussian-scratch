@@ -72,6 +72,15 @@ def project_points(points, e, K, dist_coeffs=None, return_depth=False):
 
 
 def project_covariance(points, sigmas, e, K, dist_coeffs=None):
+    """
+    project covariance to image space
+
+    sigma` = JW Sigma W^T J^T
+
+    J = [[fx/z, 0, -fx*x/(z^2)]
+        [0, fy/z, -fy*y/(z^2)]]
+    """
+
     W = e[:3, :3]
     t = e[:3, 3]
     fx, fy = K[0, 0], K[1, 1]
@@ -98,13 +107,3 @@ def project_covariance(points, sigmas, e, K, dist_coeffs=None):
     sigma_2d = np.einsum('nij, njk, nkl->nil', U, sigmas, U.transpose(0, 2, 1))
 
     return sigma_2d
-
-
-def select_points_within_bounds(projected_points, width, height, colors=None):
-    bound_indices = np.all(projected_points >= 0, axis=1) & np.all(
-        projected_points < [width, height], axis=1)
-    bound_points = projected_points[bound_indices]
-    if colors is not None:
-        bound_colors = colors[bound_indices]
-        return bound_points, bound_colors
-    return bound_points, None

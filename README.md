@@ -4,6 +4,7 @@ References
 - https://huggingface.co/datasets/DL3DV/DL3DV-Benchmark
 - https://github.com/google-research/multinerf/blob/main/scripts/local_colmap_and_resize.sh
 - https://colmap.github.io/cli.html#cli
+- https://colmap.github.io/format.html
 - https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/
 
 
@@ -306,6 +307,6 @@ function Rasterize(𝑤, ℎ, 𝑀, 𝑆, 𝐶, 𝐴, 𝑉 )
 
 *Scaled down for visualization*
 
-| Gaussian Points Open3D (manual) | Projected Gaussian Points (alpha=0.1) | Original Frame |
+| Gaussian Points Open3D (manual, scaled down solid gaussians) | Projected Gaussian Points (alpha=0.1, with points) | Original Frame |
 |:------------:|:---------------------:|:--------------:|
 | <img src="docs/images/gaussian_points_00001.png" width="300"/> | <img src="docs/images/projected_gaussian_00001.png" width="300"/> | <img src="docs/images/frame_00001.png" width="300"/> |

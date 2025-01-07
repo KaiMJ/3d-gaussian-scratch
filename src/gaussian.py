@@ -69,7 +69,6 @@ class GaussianSplatting:
 
         # non gradient implementation for now
         # Have to revist complexity of KDTree
-        print(points.shape)
         kdtree = KDTree(points)
         distances, _ = kdtree.query(points, k=4)  # k=4 includes the point itself
         
