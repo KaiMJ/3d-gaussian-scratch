@@ -81,7 +81,7 @@ class GaussianSplatting:
         r = quaternion_to_rotation_vectorized(q) # (N, 3, 3)
 
         # when initalizing, we sqrt since we will do (S @ ST) first
-        s = mean_distances[:, None, None] * np.eye(3) # (N, 3, 3)
+        s = np.sqrt(mean_distances[:, None, None]) * np.eye(3) # (N, 3, 3)
 
         # we do (S @ ST) first because it's a symmetric matrix
         # then we apply Rotation

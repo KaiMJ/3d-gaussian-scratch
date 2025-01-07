@@ -24,7 +24,7 @@ def create_ellipsoids_as_one_mesh(points, sigmas, colors, sphere_resolution=5, s
     
     for center, sigma, color in zip(points, sigmas, colors):
         # for isotropic gaussian, assume eigenvalue is diagonal of sigma
-        scales = 2* np.sqrt(np.diagonal(sigma)) * std
+        scales = np.sqrt(np.diagonal(sigma)) * std
         transformed_vertices = base_vertices * scales + center
 
         all_vertices.append(transformed_vertices)

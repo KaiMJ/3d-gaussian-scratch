@@ -35,10 +35,8 @@ def quaternion_to_rotation_vectorized(q):
 
 
 def project_points(points, e, K, dist_coeffs=None, return_depth=False):
-    # homogenous coordinates
-    points_h = np.hstack([points, np.ones((len(points), 1))])
     # First apply extrinsics (4x4 @ 4xN)
-    cam_points = (e @ points_h.T)
+    cam_points = (e @ to_homogeneous(points).T)
     # Then get normalized coordinates (before K)
     cam_points = cam_points[:3, :]
     normalized_coords = cam_points / cam_points[2:3, :]  # Divide by Z
@@ -85,8 +83,7 @@ def project_covariance(points, sigmas, e, K, dist_coeffs=None):
     t = e[:3, 3]
     fx, fy = K[0, 0], K[1, 1]
 
-    points_h = np.hstack([points, np.ones((len(points), 1))])
-    cam_points = (e @ points_h.T).T[:, :3]
+    cam_points = (e @ to_homogeneous(points).T).T[:, :3]
 
     X = cam_points[:, 0]
     Y = cam_points[:, 1]
@@ -107,3 +104,6 @@ def project_covariance(points, sigmas, e, K, dist_coeffs=None):
     sigma_2d = np.einsum('nij, njk, nkl->nil', U, sigmas, U.transpose(0, 2, 1))
 
     return sigma_2d
+
+def to_homogeneous(x):
+    return np.hstack([x, np.ones((len(x), 1))])
