@@ -22,7 +22,7 @@ class COLMAP_Data:
         self.width, self.height = self.cameras_data[1]["width"], self.cameras_data[1]["height"]
 
         self.K, self.distortion = self.get_intrinsics() # K: (3, 3), distortion: (4,)
-        self.C2W, self.W2C = self.get_extrinsics()
+        self.E = self.get_extrinsics()
 
     def get_intrinsics(self):
         """
@@ -47,6 +47,7 @@ class COLMAP_Data:
             0 1]
 
         returns {frame_name: E}
+        Extrinsic: camera to world
         """
         qvecs = np.array([v['qvec'] for v in self.images_data.values()])
         tvecs = np.array([v['tvec'] for v in self.images_data.values()])
@@ -58,9 +59,8 @@ class COLMAP_Data:
         w2c[:, 3, 3] = 1
         c2w = np.linalg.inv(w2c).transpose(0, 2, 1)
 
-        C2W = {k: c2w[i] for i, k in enumerate(self.frame_names)}
-        W2C = {k: w2c[i] for i, k in enumerate(self.frame_names)}
-        return C2W, W2C
+        E = {k: c2w[i] for i, k in enumerate(self.frame_names)}
+        return E
 
     def get_points_colors(self):
         """
