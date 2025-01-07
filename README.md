@@ -304,9 +304,12 @@ function Rasterize(𝑤, ℎ, 𝑀, 𝑆, 𝐶, 𝐴, 𝑉 )
  -  Σ = 𝑅𝑆𝑆^𝑇𝑅^𝑇: factorized with rotation R and scaling S
  - rotation R is further factorized with normalized quaternion
  -  S = mean of distance to closest three points
+2. Cull gaussians that are not in view frustum 99% confidence interval
+ - Use sqrt(chi2.ppf(0.99, 2)) = 3.04 for 99% confidence interval
+ - check if points_2d +- scale is in view frustum, where scale is sqrt of eigenvalue since length = SST of covariance matrix
 
 *Scaled down for visualization*
 
-| Gaussian Points Open3D (manual, scaled down solid gaussians) | Projected Gaussian Points (alpha=0.1, with points) | Original Frame |
+| Gaussian Points (scale=1) | Gaussian Points (scale=0.1) | Original Frame |
 |:------------:|:---------------------:|:--------------:|
-| <img src="docs/images/gaussian_points_00001.png" width="300"/> | <img src="docs/images/projected_gaussian_00001.png" width="300"/> | <img src="docs/images/frame_00001.png" width="300"/> |
+| <img src="docs/images/projected_gaussian_00001_scaled_1.png" width="300"/> | <img src="docs/images/projected_gaussian_00001_scaled_0.1.png" width="300"/> | <img src="docs/images/frame_00001.png" width="300"/> |
