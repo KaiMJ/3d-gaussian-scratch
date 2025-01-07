@@ -19,7 +19,7 @@ def visualize_point_cloud(points, colors, title="3D Point Cloud"):
 
     o3d.visualization.draw_geometries([pcd], window_name=title)
 
-def create_ellipsoids_as_one_mesh(points, sigmas, colors, sphere_resolution=5):
+def create_ellipsoids_as_one_mesh(points, sigmas, colors, sphere_resolution=5, std=1):
     """
     Usage:
     ```
@@ -40,7 +40,8 @@ def create_ellipsoids_as_one_mesh(points, sigmas, colors, sphere_resolution=5):
     vertex_count = 0
     
     for center, sigma, color in zip(points, sigmas, colors):
-        scales = np.sqrt(np.diagonal(sigma))
+        # for isotropic gaussian, assume eigenvalue is diagonal of sigma
+        scales = 2* np.sqrt(np.diagonal(sigma)) * std
         transformed_vertices = base_vertices * scales + center
 
         all_vertices.append(transformed_vertices)
