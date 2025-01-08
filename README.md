@@ -8,6 +8,19 @@ References
 - https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/
 
 
+## 0. Setup
+
+```bash
+cd src/cuda_backend
+mkdir build
+cd build
+
+cmake ..
+cmake --build .
+cd ../../..
+pip install -e .
+```
+
 ## 1. Download Dataset (DL3DV-Benchmark)
 
 <details>
