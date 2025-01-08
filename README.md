@@ -262,7 +262,25 @@ Alpha blending (like NeRF)
 
 
 <details>
-<summary>Gaussian Splatting Pseudocode (from paper)</summary>
+<summary>Gaussian Splatting Pseudocode (current implementation)</summary>
+
+```
+1. Initialize 3D gaussian points with covariance matrices
+ -  Σ = 𝑅𝑆𝑆^𝑇𝑅^𝑇: factorized with rotation R and scaling S
+ - rotation R is further factorized with normalized quaternion
+ -  S = mean of distance to closest three points
+2. Cull gaussians that are not in view frustum 99% confidence interval
+ - also check if depth_2d > 0
+ - Use sqrt(chi2.ppf(0.99, 2)) = 3.04 for 99% confidence interval
+ - Visualization below: points_2d +- scale, where scale is sqrt of eigenvalue since length = SST of covariance matrix
+3. Rasterize gaussians
+ - Split into 16x16 pixel tiles
+ - sort each gaussian in tile by depth #TODO: GPU radix sort
+```
+</details>
+
+<details>
+<summary>Algorithm 1 Optimization and Densification (paper)</summary>
 
 ```
 Algorithm 1 Optimization and Densification
@@ -287,8 +305,14 @@ while not converged do
                 else ⊲ Under-reconstruction
                     CloneGaussian(𝜇, Σ, 𝑐, 𝛼)
     𝑖 ← 𝑖 + 1
+```
+</details>
 
 
+<details>
+<summary>Algorithm 2 GPU software rasterization of 3D Gaussians (Paper)</summary>
+
+```
 Algorithm 2 GPU software rasterization of 3D Gaussians
 𝑤, ℎ: width and height of the image to rasterize
 𝑀, 𝑆: Gaussian means and covariances in world space
@@ -313,16 +337,40 @@ function Rasterize(𝑤, ℎ, 𝑀, 𝑆, 𝐶, 𝐴, 𝑉 )
 
 ## 4. Implementation
 
-1. Initialize 3D gaussian points with covariance matrices
- -  Σ = 𝑅𝑆𝑆^𝑇𝑅^𝑇: factorized with rotation R and scaling S
- - rotation R is further factorized with normalized quaternion
- -  S = mean of distance to closest three points
-2. Cull gaussians that are not in view frustum 99% confidence interval
- - Use sqrt(chi2.ppf(0.99, 2)) = 3.04 for 99% confidence interval
- - check if points_2d +- scale is in view frustum, where scale is sqrt of eigenvalue since length = SST of covariance matrix
+|Original Frame|  Gaussian Points (scale=0.1) | 
+|:------------:|:---------------------:|
+| <img src="docs/images/frame_00001.png" width="300"/> | <img src="docs/images/projected_gaussian_00001_scaled_0.1.png" width="300"/> |
 
-*Scaled down for visualization*
 
-| Gaussian Points (scale=1) | Gaussian Points (scale=0.1) | Original Frame |
-|:------------:|:---------------------:|:--------------:|
-| <img src="docs/images/projected_gaussian_00001_scaled_1.png" width="300"/> | <img src="docs/images/projected_gaussian_00001_scaled_0.1.png" width="300"/> | <img src="docs/images/frame_00001.png" width="300"/> |
+| Rasterized Points | Gaussian Points (scale=1) |
+|:------------:|:---------------------:|
+| <img src="docs/images/rasterized_gaussian_00001.png" width="300"/> | <img src="docs/images/projected_gaussian_00001_scaled_1.png" width="300"/> |
+
+
+<details>
+<summary>Rasterization equations</summary>
+<div style="font-size: 80%; text-align: center;">
+
+$C = \sum_{i=1}^N T_i \alpha_i c_i$
+
+where:
+
+$\alpha_i = (1 - \exp(-\sigma_i \delta_i)), \quad T_i = \prod_{j=1}^{i-1} (1 - \alpha_j)$
+
+Thus:
+
+$C = \sum_{i \in N} c_i \alpha_i \prod_{j=1}^{i-1} (1 - \alpha_j)$
+
+Also, density of gaussian at a point is:
+
+$G(x) = \frac{1}{2\pi |\Sigma|^{1/2}} \exp\left(-\frac{1}{2} (x - \mu)^T \Sigma^{-1} (x - \mu)\right)$
+
+</div>
+
+ - distance = tile_pixels - points_2d
+ - Density = distance.T @ inv(covariance) @ distance
+ - Alpha = (1 - exp(-density * depth)) # apply sigmoid [0, 1) for smooth gradients
+ - Transmittance = cumulative product of alpha
+ - Rasterized Color = init_color @ (alpha * cumulative_alpha)
+
+</details>
