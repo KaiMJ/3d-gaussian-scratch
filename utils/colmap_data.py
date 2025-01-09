@@ -57,7 +57,7 @@ class COLMAP_Data:
         w2c[:, :3, :3] = rotation
         w2c[:, :3, 3] = tvecs
         w2c[:, 3, 3] = 1
-        c2w = np.linalg.inv(w2c).transpose(0, 2, 1)
+        c2w = np.linalg.inv(w2c)
 
         E = {k: c2w[i] for i, k in enumerate(self.frame_names)}
         return E
