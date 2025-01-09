@@ -337,14 +337,9 @@ function Rasterize(𝑤, ℎ, 𝑀, 𝑆, 𝐶, 𝐴, 𝑉 )
 
 ## 4. Implementation
 
-|Original Frame|  Gaussian Points (scale=0.1) | 
+|Original Frame|  Gaussian Projected | 
 |:------------:|:---------------------:|
-| <img src="docs/images/frame_00001.png" width="300"/> | <img src="docs/images/projected_gaussian_00001_scaled_0.1.png" width="300"/> |
-
-
-| Rasterized Points | Gaussian Points (scale=1) |
-|:------------:|:---------------------:|
-| <img src="docs/images/rasterized_gaussian_00001.png" width="300"/> | <img src="docs/images/projected_gaussian_00001_scaled_1.png" width="300"/> |
+| <img src="docs/images/frame_00001.png" width="300"/> | <img src="docs/images/rasterized_gaussian_00001.png" width="300"/> |
 
 
 <details>
